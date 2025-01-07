@@ -12,5 +12,5 @@ export default function _layout() {
       />
         <Stack.Screen  name='ContainerPage'  options={{ headerShown: false }}  />
     </Stack>
-  )
+  )   
 }

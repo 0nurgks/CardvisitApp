@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CardFetch } from "../utils";
 import "./layoutcss/card.css";
 import { Card } from "primereact/card";
-
+import {View,TouchableOpacity,Text,Img} from "react-native";
 const Cards = () => {
   const [myCards, setMyCards] = useState([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0); // Aktif kartın indeksi
@@ -10,25 +10,30 @@ const Cards = () => {
 
   useEffect(() => {
     const fetchCards = () => {
-      fetch(`${CardFetch}?username=${username}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.myCards) {
-            setMyCards(data.myCards);
-          } else {
-            console.error("myCards not found in API response:", data);
-          }
+      try {
+        fetch(`${CardFetch}?username=${username}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         })
-        .catch((error) => console.error("Fetch error:", error));
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.myCards) {
+              setMyCards(data.myCards);
+            } else {
+              console.error("myCards not found in API response:", data);
+            }
+          });
+      }
+       catch (error) {
+        console.error("Fetch error:", error)
+      }
+       
     };
 
     fetchCards();
-  }, [username]);
+  }, []);
 
   // Geçerli kartı al
   const currentCard = myCards[currentCardIndex];
@@ -48,42 +53,42 @@ const Cards = () => {
   };
 
   return (
-    <div className="cardContainer">
+    <View className="cardContainer">
       {myCards.length > 0 ? (
-        <div className="card">
+        <View className="card">
           {currentCard ? (
-            <div className="card-item">
-              <div
+            <View className="card-item">
+              <View
                 className="cardContent"
                 style={{ backgroundColor: "#fff" }}
               >
-                <img src="" alt="" />
-                <p>{currentCard.textarea1}</p>
-                <p>{currentCard.textarea2}</p>
-              </div>
-              <div className="navigation-buttons">
-                <button
+                <Img src="" alt="" />
+                <Text>{currentCard.textarea1}</Text>
+                <Text>{currentCard.textarea2}</Text>
+              </View>
+              <View className="navigation-buttons">
+                <TouchableOpacity
                   onClick={handlePrevious}
                   disabled={currentCardIndex === 0}
                 >
                   Previous
-                </button>
-                <button
+                </TouchableOpacity>
+                <TouchableOpacity
                   onClick={handleNext}
                   disabled={currentCardIndex === myCards.length - 1}
                 >
                   Next
-                </button>
-              </div>
-            </div>
+                </TouchableOpacity>
+              </View>
+            </View>
           ) : null}
-        </div>
+        </View>
       ) : (
-        <div>
-          <p>Loading cards...</p>
-        </div>
+        <View>
+          <Text>Loading cards...</Text>
+        </View>
       )}
-    </div>
+    </View>
   );
 };
 

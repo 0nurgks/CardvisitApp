@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {AuthFetch} from "../utils";
-import { useNavigate } from "react-router";
+import { Form, useNavigate } from "react-router";
 const Auth = () => {
     const [page,setPage]=useState(1);
     const navigate = useNavigate();
@@ -44,16 +44,16 @@ const Auth = () => {
         fetchAuth();
        }
 
-  return (<div>
-   {<div>
-    <form action="POST">
-      <input type="text" name="email" value={email} onChange={(event)=>setEmail(event.target.value)}/>
-      <input type="text" name="password" value={password} onChange={(event)=>setPassword(event.target.value)}/>
-      <button type='submit' onClick={(e)=>handleClick(e)}> Giriş</button>
-    </form>
-    <button  onClick={()=>navigate("/register")}> Kayıt Ol</button>
-  </div>}
-  </div>)
+  return (<View>
+   {<View>
+    <Form action="POST">
+      <TextInput type="text" name="email" value={email} onChange={(event)=>setEmail(event.target.value)}/>
+      <TextInput type="text" name="password" value={password} onChange={(event)=>setPassword(event.target.value)}/>
+      <TouchableOpacity type='submit' onClick={(e)=>handleClick(e)}> Giriş</TouchableOpacity>
+    </Form>
+    <TouchableOpacity  onClick={()=>navigate("/register")}> Kayıt Ol</TouchableOpacity>
+  </View>}
+  </View>)
 }
 
 export default Auth

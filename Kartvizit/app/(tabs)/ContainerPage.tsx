@@ -1,39 +1,117 @@
-import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Tabbar from './Tabbar';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet,Dimensions  } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Topbar from './Topbar';
-export default function ContainerPage() {
-const a = 1;
+import Tabbar from './Tabbar';
+import Cards from './Cards';
+import Scan from './Scan';
+import Options from './Options';
+import Form from './Form';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Auth from './Auth';
+const { width, height } = Dimensions.get('window');
+
+
+
+const Main = () => {
+  const [mytoken, setMytoken] = useState<String>();
+  const navigation = useNavigation();
+  const [buttonState, setButtonState] = useState(2);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          setMytoken(token);
+         
+        }
+      } catch (error) {
+        console.error('Error fetching token:', error);
+      }
+    };
+  
+    fetchToken();
+  }, []);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.pageContainer}>
       <View style={styles.page}>
-        <Topbar/>
-      <View style={styles.container}>
-       {a==1? <View style={styles.a}/>:<></>}
+        <Topbar buttonState={buttonState} setButtonState={setButtonState} />
+       <View style={styles.container}>
+          {buttonState === 1&&mytoken ? <Scan />:<></>}
+          {buttonState === 2&&mytoken ? <Cards />:<></>}
+          {buttonState === 3&&mytoken ? <Options />:<></>}
+          {buttonState === 4&&mytoken ? <Form />:<></>}
+          {!mytoken ? <Auth></Auth>:<></>}
+        </View>
+        <Tabbar buttonState={buttonState} setButtonState={setButtonState} />
       </View>
-      <Tabbar/>
-      </View>
-    </SafeAreaView>
+    </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  safeArea:
-  {
+export const styles = StyleSheet.create({
+  appcontainer:{
     flex:1,
-  },
-  page:
-  {
-    flex:1,
-    justifyContent:"space-between"
-  },
-  container:{
+
 
   },
-  a:{
+  pageContainer: {
+    flex:1,
+    backgroundColor: '#cfbcff',
     
-    backgroundColor:"red"
-  }
+  },
+  page: {
+    flex:1,
+    height: height * 1, // 5vh
+
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    
+  },
+  topbar: {
+    flexDirection: 'row',
+    backgroundColor: '#c1b3f4',
+    width: '100%',
+    height: height * 0.05, // 5vh yerine ekran yüksekliğine göre ayar
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    alignSelf: 'center',
+    backgroundColor: '#b0b2ff',
+    width: '90%',
+    marginVertical: 10,
+  },
+  
+  addcard: {
+    position: 'absolute', // 'fixed' yerine 'absolute' kullanılmalı
+    right: '20%',
+    bottom: 10, // Konumlandırma için bir referans noktası ekleyin
+  },
+  tabbar: {
+    flexDirection: 'row',
+    backgroundColor: '#a6aaf5',
+    width: '100%',
+    height: height * 0.05, // 5vh
+    justifyContent: 'center',
+    marginTop: 'auto', // Alt kısımda yer almasını sağlamak için
+  },
+  tabbarbutton: {
+    // Yüzde değerler yerine uygun bir hesaplama kullanabilirsiniz
+    alignItems:"center",
+    justifyContent: 'center',
+    padding: 0,
+    flex: 1,
+    borderWidth: 0, // React Native'de 'border' yerine 'borderWidth' kullanılır
+  },
+  tabbarbuttonHover: {
+    // 'hover' durumu mobil cihazlarda desteklenmez
+    // Eğer bir "pressed" durumu gerekiyorsa, TouchableOpacity kullanabilirsiniz
+    opacity: 0.5,
+  },
 });
+
+export default Main;
