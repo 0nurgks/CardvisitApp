@@ -8,7 +8,7 @@ const Card = mongoose.Schema({
     textarea3:{type:String},
     textarea4:{type:String},
     textarea5:{type:String},
-    image: { type: String }
+    image: { type: Array }
 
 })
 

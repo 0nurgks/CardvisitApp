@@ -4,16 +4,18 @@ import { useNavigation } from '@react-navigation/native';
 import Topbar from './Topbar';
 import Tabbar from './Tabbar';
 import Cards from './Cards';
-import Scan from './Scan';
+import QR from './QR';
 import Options from './Options';
 import Form from './Form';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Auth from './Auth';
+import { useRouter } from 'expo-router';
 const { width, height } = Dimensions.get('window');
 
 
 
 const Main = () => {
+  const router = useRouter();
   const [mytoken, setMytoken] = useState<String>();
   const navigation = useNavigation();
   const [buttonState, setButtonState] = useState(2);
@@ -24,7 +26,9 @@ const Main = () => {
         const token = await AsyncStorage.getItem('token');
         if (token) {
           setMytoken(token);
-         
+        }
+        else{
+          router.push("/Auth");
         }
       } catch (error) {
         console.error('Error fetching token:', error);
@@ -39,11 +43,10 @@ const Main = () => {
       <View style={styles.page}>
         <Topbar buttonState={buttonState} setButtonState={setButtonState} />
        <View style={styles.container}>
-          {buttonState === 1&&mytoken ? <Scan />:<></>}
+          {buttonState === 1&&mytoken ? <QR />:<></>}
           {buttonState === 2&&mytoken ? <Cards />:<></>}
           {buttonState === 3&&mytoken ? <Options />:<></>}
           {buttonState === 4&&mytoken ? <Form />:<></>}
-          {!mytoken ? <Auth></Auth>:<></>}
         </View>
         <Tabbar buttonState={buttonState} setButtonState={setButtonState} />
       </View>

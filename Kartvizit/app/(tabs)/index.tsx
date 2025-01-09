@@ -24,6 +24,6 @@ export default function Index() {
   }, []);
   
 
-  return (<GestureHandlerRootView>{mytoken?<View style={styles.appcontainer}><ContainerPage/></View>:<Auth/>}</GestureHandlerRootView>);
+  return (<GestureHandlerRootView><Auth/></GestureHandlerRootView>);
 
 }
