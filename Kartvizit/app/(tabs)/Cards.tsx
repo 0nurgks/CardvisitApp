@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Button, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Button, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CardFetch } from "../utils";
 
@@ -27,6 +27,7 @@ const Cards = () => {
       });
 
       console.log('Response status:', response.status);
+      
 
       const data = await response.json();
       console.log('Response data:', data);
@@ -54,6 +55,7 @@ const Cards = () => {
     if (currentCardIndex < myCards.length - 1) {
       setCurrentCardIndex((prevIndex) => prevIndex + 1);
     }
+   
   };
 
   // Önceki kart
@@ -66,45 +68,38 @@ const Cards = () => {
 
   return (
     <View style={styles.container}>
-      {myCards.length > 0 ? (
-        <View style={styles.cardContainer}>
-          <View style={styles.cardTextContainer}>
-            <Text style={styles.cardText}>{currentCard?.textarea1}</Text>
-            <Text style={styles.cardText}>{currentCard?.textarea2}</Text>
-          </View>
-          <View style={styles.imageContainer}>
-              {/* Base64 resimleri render etme */}
-              {currentCard?.image && currentCard.image.length > 0 ? (
-              currentCard.image.map((img, index) => (
-                <View key={index}  style={styles.imagediv}>
-                  <Image source={{ uri: img }} style={styles.image} />
-                </View>
-              ))
-            ) : (
-              <Text>No image available</Text>
-            )}
-          </View>
-          <View style={styles.navigationButtons}>
-            <TouchableOpacity
-              style={styles.navigationButton}
-              disabled={currentCardIndex === 0} // Disable Previous button when first card
-              onPress={handlePrevious}
-            >
-              <Text>Önceki</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.navigationButton}
-              disabled={currentCardIndex === myCards.length - 1} // Disable Next button when last card
-              onPress={handleNext}
-            >
-              <Text>Sonraki</Text>
-            </TouchableOpacity>
-          </View>
+      {/* Ana ScrollView (dokunarak kaydırma için) */}
+      <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false}>
+        {/* Biyografi Alanı */}
+        <View style={styles.bioContainer}>
+          <Text style={styles.bioText}>
+            {currentCard?.textarea1 || "Biyografi bulunamadı"}
+          </Text>
+          <Text style={styles.bioText}>
+            {currentCard?.textarea2 || "Biyografi bulunamadı"}
+          </Text>
         </View>
-      ) : (
-        <Text>Loading cards...</Text>
-      )}
+
+        {/* Görsel Alanı */}
+        <View style={styles.imageContainer}>
+          {/* Base64 string'i doğru formatta kullanma */}
+          {currentCard?.image ? (
+            <Image
+              source={{ uri: `${currentCard.image}` }} // Base64 formatı ile yükleme
+              style={styles.image}
+            />
+          ) : (
+            <Text style={styles.noImageText}>No image available</Text>
+          )}
+        </View>
+
+      </ScrollView>
+
+      {/* Alt Menü Alanı */}
+      <View style={styles.buttonContainer}>
+        <Button title="Önceki" onPress={handlePrevious} />
+        <Button title="Sonraki" onPress={handleNext} />
+      </View>
     </View>
   );
 };
@@ -112,71 +107,50 @@ const Cards = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-  },
-  cardText: {
-    fontSize: 16,
-    marginBottom: 8,
-    maxWidth: '100%',
-    textAlign: 'left',
-    overflow: 'hidden',
-    numberOfLines: 1,
-    ellipsizeMode: 'tail',
-  },
-  cardContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    backgroundColor: '#fff',
+    backgroundColor: '#eaeaff',
     padding: 20,
-    borderRadius: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    marginBottom: 20,
-    width: '100%',
   },
-  cardTextContainer: {
-    flexWrap: "wrap",
-  
-    padding:25,
-    flex:1,
-    alignSelf:"flex-start"
-    },
-  navigationButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: "auto",
-    width: '100%',
+  mainScroll: {
+    flex: 1,
   },
-  navigationButton: {
-    marginHorizontal: 5,
-    backgroundColor: '#a6aaf5',
-    borderRadius: 5,
+  bioContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
     padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginBottom: 10, // Görsel alanına biraz mesafe
+  },
+  bioText: {
+    fontSize: 14,
+    color: '#333',
   },
   imageContainer: {
-    marginBottom:"auto",
-    alignSelf:"flex-end",
-    flex:1,
-   
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   image: {
-    width: 200,
-    height: 200,
-    resizeMode: 'contain',
-    
+    width: 100,
+    height: 100,
+    marginRight: 10,
+    borderRadius: 10,
   },
-  imagediv:{
-    alignSelf:"center"
-  }
+  noImageText: {
+    color: '#999',
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
 });
-
-export default Cards;
 
 export default Cards;

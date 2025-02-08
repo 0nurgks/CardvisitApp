@@ -1,6 +1,22 @@
 const CardModel = require("../modules/CardModule.js");
 const AuthModel = require("../modules/AuthModule.js");
 
+module.exports.getOneCard = async (req,res) =>{
+    try {
+        const cardID = req.query;
+
+        const card = CardModel.findOneById(cardID);  // Düzeltilmiş yazım
+
+    if(!card){
+        res.status(404).json({message:"card not found"});
+    }
+
+    res.status(200).json({message : "kartınız", card});
+    } catch (error) {
+        res.status(500).json({message: "Connection error on server"});
+    }
+}
+
 module.exports.getCards = async (req, res) => {
     console.log("[DEBUG] Incoming request to getCards");
     console.log("[DEBUG] Request query:", req.query);
@@ -41,8 +57,8 @@ module.exports.postCard = async (req, res) => {
 
     const { username, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, image } = req.body;
 
-    if (!username || !textarea1) {
-        console.error("[ERROR] Missing required fields:", { userid, username, textarea1 });
+    if (!username || !textarea1 || !image) {
+        console.error("[ERROR] Missing required fields:", { username, textarea1, image });
         return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -58,20 +74,30 @@ module.exports.postCard = async (req, res) => {
             image
         });
 
-        const currentUser = await AuthModel.findOne({username});
+        const currentUser = await AuthModel.findOne({ username });
         if (!currentUser) {
             console.error("[ERROR] User not found with username:", username);
             return res.status(404).json({ message: "User not found, please login first" });
         }
 
-        const newCard =  await new CardModel({ userid:currentUser._id,username, textarea1, textarea2, textarea3, textarea4, textarea5, textarea6, image });
+        const newCard = await new CardModel({
+            userid: currentUser._id,
+            username,
+            textarea1,
+            textarea2,
+            textarea3,
+            textarea4,
+            textarea5,
+            textarea6,
+            image
+        });
 
         await newCard.save();
         console.log("[DEBUG] Card saved successfully:", newCard);
 
         res.status(201).json({ message: "Card saved successfully" });
     } catch (error) {
-        console.error("[ERROR] Error in postCard:", error);
-        res.status(500).json({ message: "Connection error on server", error });
+        console.error("[ERROR] Error in postCard:", error);  // Hata detaylarını yazdırma
+        res.status(500).json({ message: "Connection error on server", error: error.message || error });
     }
 };

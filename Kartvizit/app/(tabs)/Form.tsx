@@ -1,67 +1,76 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet,Image,Text } from 'react-native';
-import { CardFetch } from '../utils';
-// AsyncStorage yerine secure storage veya başka bir depolama yöntemi kullanabilirsiniz.
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { launchImageLibrary } from 'react-native-image-picker';
-
-
-// API endpoint'inizi buraya yazın
+import React, { useState, useEffect } from "react";
+import { View, TextInput, Button, Alert, StyleSheet, Image, Text } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from 'expo-image-picker';
+import { CardFetch } from "../utils";
 
 const Form = () => {
   const [textarea1, setTextarea1] = useState("");
   const [textarea2, setTextarea2] = useState("");
   const [username, setUsername] = useState("");
-  const [base64Image, setBase64Image] = React.useState<string | null>(null);
-  const [image, setImage] = useState<string[]>([]);
+  const [base64Image, setBase64Image] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+
   // AsyncStorage'den username'i yükle
-  React.useEffect(() => {
+  useEffect(() => {
     const getUsername = async () => {
       const storedUsername = await AsyncStorage.getItem("username");
-      setUsername(storedUsername || ""); // Eğer kayıtlı username yoksa boş string ata
+      setUsername(storedUsername || "");
     };
     getUsername();
   }, []);
 
-  const pickImages = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        includeBase64: true, // Base64 verisini etkinleştir
-        selectionLimit: 0, // 0 limit, bu sayede birden fazla resim seçilebilir
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log('User cancelled image picker');
-        } else if (response.error) {
-          console.log('ImagePicker Error: ', response.error);
-        } else if (response.assets && response.assets.length > 0) {
-          const selectedImages = response.assets;
-          const base64Images = selectedImages.map((image) => `data:${image.type};base64,${image.base64}`);
-          setImage(base64Images); // Diziye tüm base64 görüntülerini ekleyin
-        }
-      }
-    );
-  };
-  const myStates = { username, textarea1, textarea2,image };
-
-  const PostStates = async (states: { username: string; textarea1: string; textarea2: string; }) => {
-    try {
-      await fetch(CardFetch, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(states),
+  // **Resim Seçme ve Base64 Dönüştürme**
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+  
+    console.log("Resim Seçimi Sonucu: ", result);  // Debugging: Burada sonucu kontrol edin
+    if (!result.cancelled) {
+      const imageUri = result.assets[0].uri;  // URI'yi doğru şekilde al
+      setImageUri(imageUri);  // URI'yi state'e kaydet
+      const base64Response = await fetch(imageUri);
+      const base64ImageData = await base64Response.blob();
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(base64ImageData);
       });
-      Alert.alert("Başarılı", "Veriler gönderildi!");
+      setBase64Image(base64String); // Base64 formatında resmi state'e kaydet
+    } else {
+      console.error('Resim seçimi iptal edildi');
+    }
+  };
+  
+  
+
+  // **Veriyi Gönderme**
+  const handleSubmit = async () => {
+    const myStates = { username, textarea1, textarea2, image: base64Image };  // imageUri'yi "image" olarak gönderiyoruz
+  
+    try {
+      const response = await fetch(CardFetch, {  // Burada geçerli bir URL kullanın
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(myStates),
+      });
+  
+      if (response.ok) {
+        Alert.alert("Başarılı", "Veriler başarıyla gönderildi!");
+      } else {
+        Alert.alert("Hata", "Veri gönderimi sırasında bir hata oluştu.");
+      }
     } catch (error) {
       Alert.alert("Hata", "Veri gönderimi sırasında bir hata oluştu.");
       console.error("fetch hatası", error);
     }
   };
-
-  const handleSubmit = () => {
-    PostStates(myStates);
-  };
+  
 
   return (
     <View style={styles.container}>
@@ -79,11 +88,11 @@ const Form = () => {
         value={textarea2}
         onChangeText={setTextarea2}
       />
-     <Button title="Görüntü Seç" onPress={pickImages} />
-      {base64Image && (
+      <Button title="Görüntü Seç" onPress={pickImage} />
+      {imageUri && (
         <View style={styles.imageContainer}>
-          <Text style={styles.text}>Base64 Görüntü:</Text>
-          <Image  source={{ uri: base64Image }} style={styles.image} />
+          <Text style={styles.text}>Seçilen Resim:</Text>
+          <Image source={{ uri: imageUri }} style={styles.image} />
         </View>
       )}
       <Button title="Submit" onPress={handleSubmit} />
@@ -94,28 +103,34 @@ const Form = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   textarea: {
-    width: '100%',
+    width: "100%",
     height: 100,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
     padding: 10,
-    textAlignVertical: 'top', // Android'de textarea'da dikey hizalama
+    textAlignVertical: "top",
   },
-  image:{
-
-  },text:{
-
+  imageContainer: {
+    marginTop: 10,
+    alignItems: "center",
   },
-  imageContainer:{
-
-  }
+  image: {
+    width: 200,
+    height: 200,
+    resizeMode: "cover",
+    marginVertical: 10,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
 export default Form;
