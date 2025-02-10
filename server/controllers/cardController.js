@@ -2,21 +2,22 @@ const CardModel = require("../modules/CardModule.js");
 const AuthModel = require("../modules/AuthModule.js");
 const mongoose = require('mongoose');
 
-module.exports.getOneCard = async (req,res) =>{
+module.exports.getOneCard = async (req, res) => {
     try {
-        const cardID = req.query;
-
-        const card = CardModel.findOneById(cardID);  // Düzeltilmiş yazım
-
-    if(!card){
-        res.status(404).json({message:"card not found"});
-    }
-
-    res.status(200).json({message : "kartınız", card});
+      const { cardId } = req.query;  // Query parametre olarak cardId alınır
+      const card = await CardModel.findById(cardId);  // cardId ile card'ı bul
+  
+      if (!card) {
+        return res.status(404).json({ message: "Card not found" });
+      }
+  
+      res.status(200).json({ card });
     } catch (error) {
-        res.status(500).json({message: "Connection error on server"});
+      return res.status(500).json({ message: "Error fetching card", error: error.message });
     }
-}
+  };
+  
+  
 
 module.exports.getCards = async (req, res) => {
     console.log("[DEBUG] Incoming request to getCards");

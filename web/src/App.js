@@ -1,11 +1,14 @@
-
+import React from 'react';
 import './App.css';
-import MyCardsPage from "./MyCardsPage"
+import MyCardsPage from "./MyCardsPage";
+
 function App() {
-  const link = "";
+  const queryParams = new URLSearchParams(window.location.search);
+  const cardId = queryParams.get("cardId");
+
   return (
     <div className="App">
-     <MyCardsPage link={link} />
+      <MyCardsPage cardId={cardId} />
     </div>
   );
 }

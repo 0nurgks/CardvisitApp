@@ -1,10 +1,9 @@
-const bcrypt = require("bcrypt");
 const AuthModel = require("../modules/AuthModule");
+const bcrypt = require("bcrypt");
 
 module.exports.registerController = async (req, res) => {
     try {
         const { username, email, password } = req.body;
-
         console.log("[DEBUG] Incoming registration request:", { username, email });
 
         // Check if email already exists
@@ -30,9 +29,13 @@ module.exports.registerController = async (req, res) => {
         console.log("[DEBUG] New user created successfully:", newUser);
 
         // Send success response
-        res.status(201).json({ message: "Registered successfully" });
+        return res.status(201).json({ message: "Registered successfully", userId: newUser._id });
+
     } catch (error) {
         console.error("[ERROR] Registration failed:", error);
-        res.status(500).json({ message: "Connection error on server", error });
+        if (error.code === 11000) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
+        res.status(500).json({ message: "Connection error on server", error: error.message });
     }
 };

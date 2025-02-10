@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require('uuid');
+
 
 const Auth = mongoose.Schema({
     email:{
         type:String,
-        required: true
+        required: true, 
+        unique: true
     },
     password:{
         type:String,

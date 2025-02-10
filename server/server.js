@@ -11,14 +11,14 @@ dotenv.config();
 
 // CORS ayarları
 const corsOptions = {
-  origin: "*",  // Bu ayar, herhangi bir kaynaktan gelen istekleri kabul eder
+  origin: "*",
   methods: "GET,HEAD,POST,PUT,PATCH,DELETE",
   allowedHeaders: "Content-Type,Authorization",
   credentials: true,
 };
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' })); // 10MB'lik limit belirler
+app.use(express.json({ limit: '10mb' })); // 10MB'lik limit
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -29,7 +29,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use("/auth", AuthRoutes);
 app.use("/card", CardRoutes);
 
-const PORT = process.env.PORT || 5000;  // PORT'u kontrol et
+const PORT = process.env.PORT || 5000; 
 app.listen(PORT, () => {
   console.log("Server is running on port " + PORT);
 });

@@ -12,6 +12,7 @@ export default function _layout() {
       />
         <Stack.Screen  name='ContainerPage'  options={{ headerShown: false }}  />
         <Stack.Screen name='Auth'  options={{ headerShown: false }} />
+        <Stack.Screen name='Register'  options={{ headerShown: false }} />
     </Stack>
   )   
 }

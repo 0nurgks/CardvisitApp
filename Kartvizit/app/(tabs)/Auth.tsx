@@ -25,7 +25,6 @@ const Auth = () => {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // Token ve kullanıcı adını sakla, ardından "Home" ekranına yönlendir
         await AsyncStorage.setItem('token', data.token);
         await AsyncStorage.setItem('username', data.username);
         router.push('/ContainerPage');
