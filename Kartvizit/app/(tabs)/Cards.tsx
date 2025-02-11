@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Button, Text, StyleSheet, Image, ScrollView, Alert, Modal, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import QRCode from 'react-native-qrcode-svg';
 import { CardFetch } from "../utils";
 
 const Cards = () => {
@@ -50,7 +51,7 @@ const Cards = () => {
     }
   };
 
-  // Paylaşılabilir link oluşturma (localhost:3000 üzerinden)
+  // Paylaşılabilir link oluşturma
   const handleShare = (cardId) => {
     const generatedLink = `http://localhost:3000/share?cardId=${cardId}`;
     setShareLink(generatedLink);
@@ -86,6 +87,10 @@ const Cards = () => {
           <View style={styles.modalContent}>
             <Text style={styles.shareText}>Paylaşılabilir Link:</Text>
             <Text style={styles.linkText}>{shareLink}</Text>
+
+            {/* QR Kodu Gösterme */}
+            {shareLink ? <QRCode value={shareLink} size={200} /> : null}
+
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>Kapat</Text>
             </TouchableOpacity>
@@ -105,12 +110,11 @@ const styles = StyleSheet.create({
   noImageText: { color: '#999', textAlign: 'center' },
   buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
 
-  // Modal Stilleri
   modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
   modalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%', alignItems: 'center' },
   shareText: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   linkText: { fontSize: 14, color: 'blue', textAlign: 'center', marginBottom: 10 },
-  closeButton: { backgroundColor: 'red', padding: 10, borderRadius: 5 },
+  closeButton: { backgroundColor: 'red', padding: 10, borderRadius: 5, marginTop: 10 },
   closeButtonText: { color: 'white', fontWeight: 'bold' }
 });
 

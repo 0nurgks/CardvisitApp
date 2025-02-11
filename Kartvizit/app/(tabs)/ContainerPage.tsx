@@ -5,7 +5,7 @@ import Topbar from './Topbar';
 import Tabbar from './Tabbar';
 import Cards from './Cards';
 import QR from './QR';
-import Options from './Options';
+import Contact from './Contact';
 import Form from './Form';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Auth from './Auth';
@@ -45,7 +45,7 @@ const Main = () => {
        <View style={styles.container}>
           {buttonState === 1&&mytoken ? <QR />:<></>}
           {buttonState === 2&&mytoken ? <Cards />:<></>}
-          {buttonState === 3&&mytoken ? <Options />:<></>}
+          {buttonState === 3&&mytoken ? <Contact/>:<></>}
           {buttonState === 4&&mytoken ? <Form />:<></>}
         </View>
         <Tabbar buttonState={buttonState} setButtonState={setButtonState} />

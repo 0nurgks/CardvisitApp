@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
-import { CardFetch } from "./utils";
+import { CardFetch, ContactFetch } from "./utils"; // ContactFetch import edildi
+import { QRCodeCanvas } from "qrcode.react";
+
 
 const MyCardsPage = ({ cardId }) => {
   const [card, setCard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [contactModalVisible, setContactModalVisible] = useState(false);  // İletişim modal'ı için state
+  const [email, setEmail] = useState("");  // E-posta input
+  const [textArea, setTextArea] = useState("");  // Mesaj input
   const [shareLink, setShareLink] = useState("");
 
   useEffect(() => {
@@ -43,19 +47,42 @@ const MyCardsPage = ({ cardId }) => {
     fetchCard();
   }, [cardId]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleShare = () => {
     const generatedLink = `http://localhost:3000/share?cardId=${cardId}`;
     setShareLink(generatedLink);
     setModalVisible(true);
+  };
+
+  const handleContact = async () => {
+    if (!email || !textArea) {
+      alert("Lütfen e-posta ve mesaj alanlarını doldurun.");
+      return;
+    }
+
+    const payload = {
+      cardId,
+      email,
+      textArea,
+    };
+
+    try {
+      const response = await fetch(ContactFetch, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Mesajınız başarıyla gönderildi.");
+        setContactModalVisible(false);  // Modal'ı kapat
+      } else {
+        alert(data.message || "Mesaj gönderilemedi.");
+      }
+    } catch (error) {
+      alert("Bağlantı hatası");
+    }
   };
 
   if (loading) return <p>Yükleniyor...</p>;
@@ -67,33 +94,52 @@ const MyCardsPage = ({ cardId }) => {
         <div style={styles.card}>
           <p style={styles.text}>{card.textarea1}</p>
           <p style={styles.text}>{card.textarea2}</p>
-          {/* Eğer image base64 formatında ise: */}
-          {card.image || image ? (
- <img
- src={image || card.image}  // 'card.image' zaten base64 formatında
- alt="Card"
- style={styles.image}
-/>
-
-) : (
-  <p>Resim yok</p>
-)}
-
-          <button onClick={handleShare} style={styles.shareButton}>
-            Paylaş
-          </button>
+          {card.image ? <img src={card.image} alt="Card" style={styles.image} /> : <p>Resim yok</p>}
+          <button onClick={handleShare} style={styles.shareButton}>Paylaş</button>
+          <button onClick={() => setContactModalVisible(true)} style={styles.contactButton}>İletişim</button>
         </div>
       ) : (
         <p>Kart bulunamadı.</p>
       )}
 
-      {/* Modal */}
+      {/* QR Kod Modal */}
       {modalVisible && (
         <div style={styles.modalContainer}>
           <div style={styles.modalContent}>
             <p style={styles.shareText}>Paylaşılabilir Link:</p>
             <p>{shareLink}</p>
-            <button onClick={() => setModalVisible(false)} style={styles.closeButton}>
+            {/* QR Kodunu Göster */}
+            {shareLink && <QRCodeCanvas value={shareLink} size={200} />}
+            <button onClick={() => setModalVisible(false)} style={styles.closeButton}>Kapat</button>
+          </div>
+        </div>
+      )}
+
+      {/* İletişim Modal */}
+      {contactModalVisible && (
+        <div style={styles.modalContainer}>
+          <div style={styles.modalContent}>
+            <h3>İletişim Gönder</h3>
+            <label>Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={styles.input}
+            />
+            <label>Mesaj:</label>
+            <textarea
+              value={textArea}
+              onChange={(e) => setTextArea(e.target.value)}
+              style={styles.textarea}
+            ></textarea>
+            <button onClick={handleContact} style={styles.submitButton}>
+              Gönder
+            </button>
+            <button
+              onClick={() => setContactModalVisible(false)}
+              style={styles.closeButton}
+            >
               Kapat
             </button>
           </div>
@@ -103,12 +149,11 @@ const MyCardsPage = ({ cardId }) => {
   );
 };
 
-
 const styles = {
   container: {
     padding: '20px',
     fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#eaeaff', 
+    backgroundColor: '#eaeaff',
     height: '100vh',
   },
   card: {
@@ -126,13 +171,21 @@ const styles = {
     whiteSpace: 'pre-line',
   },
   image: {
-    width: '20%',  
-    height: 'auto',  
+    width: '20%',
+    height: 'auto',
     borderRadius: '8px',
     marginBottom: '20px',
   },
   shareButton: {
-    backgroundColor: '#4CAF50', 
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  contactButton: {
+    backgroundColor: '#008CBA',
     color: 'white',
     padding: '10px 20px',
     borderRadius: '5px',
@@ -166,6 +219,29 @@ const styles = {
     backgroundColor: 'red',
     color: 'white',
     padding: '10px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  input: {
+    width: '100%',
+    padding: '10px',
+    margin: '10px 0',
+    borderRadius: '5px',
+    border: '1px solid #ddd',
+  },
+  textarea: {
+    width: '100%',
+    height: '100px',
+    padding: '10px',
+    margin: '10px 0',
+    borderRadius: '5px',
+    border: '1px solid #ddd',
+  },
+  submitButton: {
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    padding: '10px 20px',
     borderRadius: '5px',
     border: 'none',
     cursor: 'pointer',
